@@ -97,37 +97,28 @@
   });
 
   /* -----------------------------------------------------
-     Hero slider
+     Hero parallax (subtle, transforms background on scroll)
   ----------------------------------------------------- */
-  const slides = document.querySelectorAll(".hero-slide");
-  const heroPagination = document.getElementById("heroPagination");
-  let heroIndex = 0;
-  let heroTimer = null;
-
-  if (slides.length && heroPagination) {
-    // Build dots
-    slides.forEach((_, i) => {
-      const b = document.createElement("button");
-      b.setAttribute("aria-label", `Slide ${i + 1}`);
-      if (i === 0) b.classList.add("active");
-      b.addEventListener("click", () => goToSlide(i));
-      heroPagination.appendChild(b);
-    });
-
-    function goToSlide(i) {
-      slides[heroIndex].classList.remove("active");
-      heroPagination.children[heroIndex].classList.remove("active");
-      heroIndex = (i + slides.length) % slides.length;
-      slides[heroIndex].classList.add("active");
-      heroPagination.children[heroIndex].classList.add("active");
-      resetTimer();
-    }
-    function nextSlide() { goToSlide(heroIndex + 1); }
-    function resetTimer() {
-      clearInterval(heroTimer);
-      heroTimer = setInterval(nextSlide, 6000);
-    }
-    resetTimer();
+  const heroBg = document.querySelector(".hero-bg");
+  if (heroBg && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    let ticking = false;
+    window.addEventListener("scroll", () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        if (y === 0) {
+          heroBg.style.animationPlayState = "running";
+          heroBg.style.transform = "";
+        } else if (y < window.innerHeight * 1.2) {
+          heroBg.style.animationPlayState = "paused";
+          const scale = 1.06 + Math.min(y / 5000, 0.08);
+          const shift = y * 0.22;
+          heroBg.style.transform = `translateY(${shift}px) scale(${scale})`;
+        }
+        ticking = false;
+      });
+    }, { passive: true });
   }
 
   /* -----------------------------------------------------
